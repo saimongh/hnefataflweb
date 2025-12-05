@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hnefatafl - Viking Chess</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Georgia, serif;
+            background: #4a6741;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #gameContainer {
+            background: #f4f1e8;
+            border: 8px solid #3a4d33;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: calc(100vh - 160px);
+            box-sizing: border-box;
+            margin: 0 auto;
+        }
+
+        #canvas {
+            display: block;
+            cursor: pointer;
+            background: white;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1/1;
+        }
+
+        #statusBar {
+            background: #3a4d33;
+            color: #f4f1e8;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            margin-top: 10px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #statusText {
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-group:first-child {
+            justify-content: flex-start;
+        }
+
+        .btn-group:last-child {
+            justify-content: flex-end;
+        }
+
+        .btn {
+            background: #505f50;
+            color: #f4f1e8;
+            border: 2px solid #d4af37;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: Georgia, serif;
+        }
+
+        .btn:hover {
+            background: #6b7c63;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #4a6741;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .menu-panel {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f4f1e8;
+            border: 8px solid #3a4d33;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .menu-header {
+            background: #3a4d33;
+            color: #f4f1e8;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .menu-title {
+            font-size: 42px;
+            margin-bottom: 10px;
+        }
+
+        .menu-subtitle {
+            color: #d4af37;
+            font-style: italic;
+        }
+
+        .rules-section {
+            background: rgba(255,255,255,0.5);
+            border-left: 5px solid #6b7c63;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            color: #3a4d33;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .section-content {
+            line-height: 1.6;
+            color: #2a2a2a;
+        }
+
+        .highlight {
+            background: rgba(212, 175, 55, 0.2);
+            border-left-color: #d4af37;
+        }
+
+        #continueBtn {
+            display: block;
+            width: 300px;
+            margin: 30px auto 0;
+            padding: 15px;
+            font-size: 18px;
+            background: #d4af37;
+            color: #f4f1e8;
+            border: 3px solid #3a4d33;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #continueBtn:hover {
+            background: #3a4d33;
+            color: #d4af37;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .btn {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+            
+            #statusBar {
+                font-size: 16px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="menu">
+        <div class="menu-panel">
+            <div class="menu-header">
+                <h1 class="menu-title">⚔ HNEFATAFL ⚔</h1>
+                <p class="menu-subtitle">Copenhagen Variant • Viking Chess</p>
+            </div>
+
+            <div class="rules-section">
+                <h2 class="section-title">1. Setup & Objective</h2>
+                <div class="section-content">
+                    <p><strong>Board:</strong> 11×11 grid with checkered pattern</p>
+                    <p><strong>Pieces:</strong></p>
+                    <ul>
+                        <li>24 Attackers (Dark/Black)</li>
+                        <li>12 Defenders (Light/White)</li>
+                        <li>1 King (Light/White with crown)</li>
+                    </ul>
+                    <p><strong>Goals:</strong></p>
+                    <ul>
+                        <li>Attackers: Capture the king</li>
+                        <li>Defenders: Move the king to any corner square</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="rules-section">
+                <h2 class="section-title">2. Movement</h2>
+                <div class="section-content">
+                    <ul>
+                        <li>All pieces move any number of empty squares horizontally or vertically (like a chess rook)</li>
+                        <li>Pieces cannot jump over other pieces</li>
+                        <li>Only the king may land on the central throne or corner squares</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="rules-section">
+                <h2 class="section-title">3. Standard Capture</h2>
+                <div class="section-content">
+                    <p>Regular pieces are captured when sandwiched between two opposing pieces horizontally or vertically.</p>
+                    <ul>
+                        <li>A piece must be moved into position to make the capture</li>
+                        <li>Moving between two enemies is safe (no capture)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="rules-section highlight">
+                <h2 class="section-title">4. Shieldwall Rule (Edge Capture)</h2>
+                <div class="section-content">
+                    <p>You can capture a row of <strong>two or more</strong> pieces along the board edge if you trap the whole group.</p>
+                    <p><strong>Requirements:</strong></p>
+                    <ul>
+                        <li><strong>Block the Front:</strong> Every piece in the row must have an enemy piece directly in front of it.</li>
+                        <li><strong>Seal the Ends:</strong> You must bracket the group at both ends (a corner square can act as one of the bracketing pieces).</li>
+                    </ul>
+                    <p><strong>The King's Role:</strong></p>
+                    <ul>
+                        <li>The king can help attack (he can act as a bracketing piece).</li>
+                        <li>If the king is trapped inside a captured shieldwall, <strong>he survives</strong> (defenders are removed, but the king stays).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="rules-section highlight">
+                <h2 class="section-title">5. Hostile Squares</h2>
+                <div class="section-content">
+                    <p>The four corner squares and the central throne are 'hostile' to all pieces except the king.</p>
+                    <ul>
+                        <li>Hostile squares act as the second piece in a sandwich capture</li>
+                        <li>The throne becomes hostile once the king leaves it</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="rules-section highlight">
+                <h2 class="section-title">6. Capturing the King</h2>
+                <div class="section-content">
+                    <ul>
+                        <li>The king must be surrounded on all four sides to be captured</li>
+                        <li>If the king is next to the throne, it acts as the fourth side</li>
+                        <li><strong>If the king is on the board edge, he is SAFE - edges are not hostile!</strong></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="rules-section highlight">
+                <h2 class="section-title">7. Exit Forts (Defenders Win)</h2>
+                <div class="section-content">
+                    <p>The Defenders win immediately if they can form an unbreakable "Fort" against the board edge.</p>
+                    <p><strong>Requirements:</strong></p>
+                    <ul>
+                        <li><strong>Position:</strong> The King must be in contact with the board edge.</li>
+                        <li><strong>Freedom:</strong> The King must be able to move (have at least one empty square inside the fort).</li>
+                        <li><strong>Security:</strong> It must be impossible for Attackers to squeeze in or capture the Defenders to break the wall.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="rules-section highlight">
+                <h2 class="section-title">8. Perpetual Repetition Rule</h2>
+                <div class="section-content">
+                    <p>Perpetual repetitions are forbidden to prevent stalling tactics.</p>
+                    <ul>
+                        <li>If the same board position occurs <strong>three times</strong>, the game ends immediately</li>
+                        <li><strong>Defenders (White) lose</strong> by perpetual repetition</li>
+                        <li>This prevents the defenders from endlessly repeating moves to avoid defeat</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button id="continueBtn">CONTINUE TO GAME</button>
+        </div>
+    </div>
+
+    <div id="gameContainer" class="hidden">
+        <canvas id="canvas" width="660" height="660"></canvas>
+        <div id="statusBar">
+            <div class="btn-group">
+                <button id="rulesBtn" class="btn">RULES (H)</button>
+                <button id="resetBtn" class="btn">RESET (R)</button>
+            </div>
+            <div class="btn-group">
+                <button id="toggleSpriteBtn" class="btn">TOGGLE SPRITES (S)</button>
+                <button id="undoBtn" class="btn" disabled>UNDO (U)</button>
+            </div>
+            <div id="statusText">Attackers (Black) Turn</div>
+        </div>
+    </div>
+
+    <script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const SQSIZE = 60;
+const ROWS = 11, COLS = 11, CENTER = 5;
+
+let useSprites = false, spritesLoaded = false;
+const sprites = { whiteKing: new Image(), whiteRook: new Image(), blackRook: new Image() };
+sprites.whiteKing.src = 'assets/images/imgs-80px/white_king.png';
+sprites.whiteRook.src = 'assets/images/imgs-80px/white_rook.png';
+sprites.blackRook.src = 'assets/images/imgs-80px/black_rook.png';
+
+let loadedSpriteCount = 0;
+Object.values(sprites).forEach(img => {
+    img.onload = () => { if (++loadedSpriteCount === 3) { spritesLoaded = true; if (useSprites) drawBoard(); } };
+});
+
+const sounds = { move: new Audio('assets/sounds/move.wav'), capture: new Audio('assets/sounds/capture.wav') };
+
+let board = [], nextPlayer = 'black', dragging = false, draggedPiece = null, draggedFrom = null;
+let mouseX = 0, mouseY = 0, validMoves = [], lastMove = null, gameOver = false, winner = null;
+let previousState = null, canUndo = false, positionHistory = new Map();
+
+function initBoard() {
+    board = Array(11).fill(null).map(() => Array(11).fill(null));
+    board[CENTER][CENTER] = { type: 'king', color: 'white' };
+    [[4,5], [6,5], [5,4], [5,6], [3,5], [7,5], [5,3], [5,7], [4,4], [4,6], [6,4], [6,6]].forEach(([r,c]) => 
+        board[r][c] = { type: 'defender', color: 'white' });
+    [[0,3], [0,4], [0,5], [0,6], [0,7], [1,5], [10,3], [10,4], [10,5], [10,6], [10,7], [9,5],
+     [3,0], [4,0], [5,0], [6,0], [7,0], [5,1], [3,10], [4,10], [5,10], [6,10], [7,10], [5,9]].forEach(([r,c]) => 
+        board[r][c] = { type: 'attacker', color: 'black' });
+    nextPlayer = 'black'; gameOver = false; winner = null; canUndo = false;
+    previousState = null; lastMove = null; positionHistory.clear();
+    recordPosition(); updateStatus();
+}
+
+function getBoardHash() {
+    let hash = '';
+    for (let r = 0; r < 11; r++) for (let c = 0; c < 11; c++) {
+        const p = board[r][c];
+        hash += !p ? '.' : p.type === 'king' ? 'K' : p.type === 'defender' ? 'D' : 'A';
+    }
+    return hash;
+}
+
+function recordPosition() {
+    const hash = getBoardHash();
+    positionHistory.set(hash, (positionHistory.get(hash) || 0) + 1);
+}
+
+function checkRepetition() {
+    return (positionHistory.get(getBoardHash()) || 0) >= 3;
+}
+
+function drawBoard() {
+    for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLS; col++) {
+        ctx.fillStyle = (row + col) % 2 === 0 ? '#eaebC8' : '#779a58';
+        ctx.fillRect(col * SQSIZE, row * SQSIZE, SQSIZE, SQSIZE);
+        if (row === CENTER && col === CENTER) {
+            ctx.strokeStyle = '#c8b48c'; ctx.lineWidth = 3;
+            ctx.strokeRect(col * SQSIZE + 2, row * SQSIZE + 2, SQSIZE - 4, SQSIZE - 4);
+        }
+        if ((row === 0 || row === 10) && (col === 0 || col === 10)) {
+            ctx.strokeStyle = '#969696'; ctx.lineWidth = 3;
+            ctx.strokeRect(col * SQSIZE + 2, row * SQSIZE + 2, SQSIZE - 4, SQSIZE - 4);
+        }
+    }
+    if (lastMove) {
+        ctx.fillStyle = 'rgba(123, 187, 227, 0.5)';
+        ctx.fillRect(lastMove.from.col * SQSIZE, lastMove.from.row * SQSIZE, SQSIZE, SQSIZE);
+        ctx.fillRect(lastMove.to.col * SQSIZE, lastMove.to.row * SQSIZE, SQSIZE, SQSIZE);
+    }
+    if (dragging && validMoves.length > 0) validMoves.forEach(move => {
+        ctx.fillStyle = 'rgba(200, 100, 100, 0.4)';
+        ctx.fillRect(move.col * SQSIZE, move.row * SQSIZE, SQSIZE, SQSIZE);
+        ctx.fillStyle = '#649664'; ctx.beginPath();
+        ctx.arc(move.col * SQSIZE + SQSIZE/2, move.row * SQSIZE + SQSIZE/2, 6, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLS; col++) {
+        const piece = board[row][col];
+        if (piece && !(dragging && row === draggedFrom.row && col === draggedFrom.col))
+            drawPiece(piece, col * SQSIZE + SQSIZE/2, row * SQSIZE + SQSIZE/2);
+    }
+    if (dragging && draggedPiece) drawPiece(draggedPiece, mouseX, mouseY, true);
+}
+
+function drawPiece(piece, x, y, large = false) {
+    if (useSprites && spritesLoaded) {
+        const size = large ? 110 : 100;
+        const sprite = piece.type === 'king' ? sprites.whiteKing : piece.color === 'white' ? sprites.whiteRook : sprites.blackRook;
+        ctx.drawImage(sprite, x - size/2, y - size/2, size, size);
+    } else {
+        const size = large ? 50 : 40;
+        ctx.fillStyle = piece.color === 'black' ? '#2a2a2a' : '#f0f0f0';
+        ctx.strokeStyle = piece.color === 'black' ? '#1a1a1a' : '#d0d0d0';
+        ctx.lineWidth = 3; ctx.beginPath();
+        ctx.arc(x, y, size/2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        if (piece.type === 'king') {
+            ctx.fillStyle = '#ffd700'; ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('♔', x, y);
+        }
+    }
+}
+
+function calculateMoves(row, col) {
+    const piece = board[row][col], moves = [];
+    if (!piece) return moves;
+    for (const [dr, dc] of [[0,1], [0,-1], [1,0], [-1,0]]) {
+        let r = row + dr, c = col + dc;
+        while (r >= 0 && r < 11 && c >= 0 && c < 11) {
+            if (board[r][c]) break;
+            if (piece.type !== 'king' && r === CENTER && c === CENTER && board[CENTER][CENTER]) break;
+            if (piece.type === 'king') moves.push({ row: r, col: c });
+            else {
+                const isThrone = r === CENTER && c === CENTER;
+                const isCorner = (r === 0 || r === 10) && (c === 0 || c === 10);
+                if (!isThrone && !isCorner) moves.push({ row: r, col: c });
+            }
+            r += dr; c += dc;
+        }
+    }
+    return moves;
+}
+
+function checkCaptures(row, col) {
+    const piece = board[row][col];
+    if (!piece) return [];
+    const captured = [], movingSide = piece.type === 'attacker' ? 'attacker' : 'defender';
+    const opponentTypes = piece.type === 'attacker' ? ['defender'] : ['attacker'];
+    for (const [dr, dc] of [[-1,0], [1,0], [0,-1], [0,1]]) {
+        const vr = row + dr, vc = col + dc, or = vr + dr, oc = vc + dc;
+        if (vr < 0 || vr > 10 || vc < 0 || vc > 10) continue;
+        const victim = board[vr][vc];
+        if (!victim || !opponentTypes.includes(victim.type)) continue;
+        let canCapture = false;
+        if (or >= 0 && or <= 10 && oc >= 0 && oc <= 10) {
+            const opposite = board[or][oc];
+            if (movingSide === 'attacker' && opposite && opposite.type === 'attacker') canCapture = true;
+            if (movingSide === 'defender' && opposite && (opposite.type === 'defender' || opposite.type === 'king')) canCapture = true;
+            if (!opposite) {
+                if (or === CENTER && oc === CENTER) canCapture = true;
+                if ((or === 0 || or === 10) && (oc === 0 || oc === 10)) canCapture = true;
+            }
+        }
+        if (canCapture) captured.push({ row: vr, col: vc });
+    }
+    captured.push(...checkShieldwallCaptures(movingSide));
+    return captured;
+}
+
+function checkShieldwallCaptures(movingSide) {
+    const captured = [], opponentTypes = movingSide === 'attacker' ? ['defender', 'king'] : ['attacker'];
+    const edges = [
+        { edge: 'top', row: 0, checkRow: 1, isHorizontal: true },
+        { edge: 'bottom', row: 10, checkRow: 9, isHorizontal: true },
+        { edge: 'left', col: 0, checkCol: 1, isHorizontal: false },
+        { edge: 'right', col: 10, checkCol: 9, isHorizontal: false }
+    ];
+    for (const edgeInfo of edges) {
+        if (edgeInfo.isHorizontal) {
+            let inShieldwall = false, shieldwallStart = -1, shieldwallPieces = [];
+            for (let c = 0; c <= 11; c++) {
+                if (c <= 10) {
+                    const piece = board[edgeInfo.row][c], inFront = board[edgeInfo.checkRow][c];
+                    const isOpponent = piece && opponentTypes.includes(piece.type);
+                    const hasAllyInFront = inFront && (movingSide === 'attacker' ? inFront.type === 'attacker' : (inFront.type === 'defender' || inFront.type === 'king'));
+                    if (isOpponent && hasAllyInFront) {
+                        if (!inShieldwall) { inShieldwall = true; shieldwallStart = c; shieldwallPieces = []; }
+                        shieldwallPieces.push({ row: edgeInfo.row, col: c, type: piece.type });
+                    } else {
+                        if (inShieldwall && shieldwallPieces.length >= 2) {
+                            if (checkBracket(edgeInfo.row, shieldwallStart - 1, movingSide) && checkBracket(edgeInfo.row, c, movingSide))
+                                captured.push(...shieldwallPieces.filter(p => p.type !== 'king'));
+                        }
+                        inShieldwall = false; shieldwallStart = -1; shieldwallPieces = [];
+                    }
+                } else {
+                    if (inShieldwall && shieldwallPieces.length >= 2) {
+                        if (checkBracket(edgeInfo.row, shieldwallStart - 1, movingSide) && checkBracket(edgeInfo.row, 10, movingSide))
+                            captured.push(...shieldwallPieces.filter(p => p.type !== 'king'));
+                    }
+                }
+            }
+        } else {
+            let inShieldwall = false, shieldwallStart = -1, shieldwallPieces = [];
+            for (let r = 0; r <= 11; r++) {
+                if (r <= 10) {
+                    const piece = board[r][edgeInfo.col], inFront = board[r][edgeInfo.checkCol];
+                    const isOpponent = piece && opponentTypes.includes(piece.type);
+                    const hasAllyInFront = inFront && (movingSide === 'attacker' ? inFront.type === 'attacker' : (inFront.type === 'defender' || inFront.type === 'king'));
+                    if (isOpponent && hasAllyInFront) {
+                        if (!inShieldwall) { inShieldwall = true; shieldwallStart = r; shieldwallPieces = []; }
+                        shieldwallPieces.push({ row: r, col: edgeInfo.col, type: piece.type });
+                    } else {
+                        if (inShieldwall && shieldwallPieces.length >= 2) {
+                            if (checkBracket(shieldwallStart - 1, edgeInfo.col, movingSide) && checkBracket(r, edgeInfo.col, movingSide))
+                                captured.push(...shieldwallPieces.filter(p => p.type !== 'king'));
+                        }
+                        inShieldwall = false; shieldwallStart = -1; shieldwallPieces = [];
+                    }
+                } else {
+                    if (inShieldwall && shieldwallPieces.length >= 2) {
+                        if (checkBracket(shieldwallStart - 1, edgeInfo.col, movingSide) && checkBracket(10, edgeInfo.col, movingSide))
+                            captured.push(...shieldwallPieces.filter(p => p.type !== 'king'));
+                    }
+                }
+            }
+        }
+    }
+    return captured;
+}
+
+function checkBracket(row, col, movingSide) {
+    if (row < 0 || row > 10 || col < 0 || col > 10) return true;
+    if ((row === 0 || row === 10) && (col === 0 || col === 10)) return true;
+    const piece = board[row][col];
+    if (piece) {
+        if (movingSide === 'attacker' && piece.type === 'attacker') return true;
+        if (movingSide === 'defender' && (piece.type === 'defender' || piece.type === 'king')) return true;
+    }
+    return false;
+}
+
+function hasValidMoves(color) {
+    for (let row = 0; row < 11; row++) for (let col = 0; col < 11; col++) {
+        const piece = board[row][col];
+        if (piece && piece.color === color && calculateMoves(row, col).length > 0) return true;
+    }
+    return false;
+}
+
+function checkEncirclement() {
+    const visited = Array(11).fill(null).map(() => Array(11).fill(false)), queue = [];
+    for (let i = 0; i < 11; i++) {
+        if (!board[0][i] || board[0][i].type !== 'attacker') { queue.push([0, i]); visited[0][i] = true; }
+        if (!board[10][i] || board[10][i].type !== 'attacker') { queue.push([10, i]); visited[10][i] = true; }
+        if (!board[i][0] || board[i][0].type !== 'attacker') { queue.push([i, 0]); visited[i][0] = true; }
+        if (!board[i][10] || board[i][10].type !== 'attacker') { queue.push([i, 10]); visited[i][10] = true; }
+    }
+    while (queue.length > 0) {
+        const [row, col] = queue.shift(), piece = board[row][col];
+        if (piece && (piece.type === 'defender' || piece.type === 'king')) return false;
+        for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+            const newRow = row + dr, newCol = col + dc;
+            if (newRow < 0 || newRow > 10 || newCol < 0 || newCol > 10 || visited[newRow][newCol]) continue;
+            const nextPiece = board[newRow][newCol];
+            if (nextPiece && nextPiece.type === 'attacker') continue;
+            visited[newRow][newCol] = true; queue.push([newRow, newCol]);
+        }
+    }
+    for (let row = 0; row < 11; row++) for (let col = 0; col < 11; col++) {
+        const piece = board[row][col];
+        if (piece && (piece.type === 'defender' || piece.type === 'king')) return true;
+    }
+    return false;
+}
+
+function checkExitFort(kingPos) {
+    if (!kingPos) return false;
+    const { row, col } = kingPos;
+    if (!(row === 0 || row === 10 || col === 0 || col === 10)) return false;
+    let hasLiberty = false;
+    for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+        const nr = row + dr, nc = col + dc;
+        if (nr >= 0 && nr <= 10 && nc >= 0 && nc <= 10 && !board[nr][nc]) { hasLiberty = true; break; }
+    }
+    if (!hasLiberty) return false;
+    const queue = [kingPos], visited = new Set(); visited.add(`${row},${col}`);
+    while (queue.length > 0) {
+        const current = queue.shift();
+        for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+            const nr = current.row + dr, nc = current.col + dc;
+            if (nr < 0 || nr > 10 || nc < 0 || nc > 10) continue;
+            const key = `${nr},${nc}`;
+            if (visited.has(key)) continue;
+            const piece = board[nr][nc];
+            if (piece && piece.type === 'attacker') return false;
+            else if (piece && (piece.type === 'defender' || piece.type === 'king')) continue;
+            else if (!piece) { visited.add(key); queue.push({ row: nr, col: nc }); }
+        }
+    }
+    return true;
+}
+
+function checkKingCapture() {
+    let kingRow = -1, kingCol = -1;
+    for (let r = 0; r < 11; r++) {
+        for (let c = 0; c < 11; c++) {
+            if (board[r][c] && board[r][c].type === 'king') { kingRow = r; kingCol = c; break; }
+        }
+        if (kingRow >= 0) break;
+    }
+    if (kingRow < 0) return false;
+    if (kingRow === 0 || kingRow === 10 || kingCol === 0 || kingCol === 10) return false;
+    let surrounded = 0;
+    for (const [dr, dc] of [[-1,0], [1,0], [0,-1], [0,1]]) {
+        const ar = kingRow + dr, ac = kingCol + dc, adj = board[ar][ac];
+        if (adj && adj.type === 'attacker') surrounded++;
+        else if (!adj) {
+            if (ar === CENTER && ac === CENTER) surrounded++;
+            if ((ar === 0 || ar === 10) && (ac === 0 || ac === 10)) surrounded++;
+        }
+    }
+    return surrounded >= 4;
+}
+
+function saveState() {
+    previousState = {
+        board: board.map(row => row.map(piece => piece ? {...piece} : null)),
+        nextPlayer, gameOver, winner,
+        lastMove: lastMove ? {...lastMove} : null,
+        positionHistory: new Map(positionHistory)
+    };
+}
+
+function undoMove() {
+    if (!canUndo || !previousState) return;
+    board = previousState.board; nextPlayer = previousState.nextPlayer;
+    gameOver = previousState.gameOver; winner = previousState.winner;
+    lastMove = previousState.lastMove; positionHistory = previousState.positionHistory;
+    canUndo = false; previousState = null;
+    updateStatus(); drawBoard();
+}
+
+function updateStatus() {
+    const statusText = document.getElementById('statusText'), undoBtn = document.getElementById('undoBtn');
+    if (gameOver) {
+        statusText.textContent = `${winner} WIN!`;
+        statusText.style.color = '#ffd700';
+    } else {
+        statusText.textContent = `${nextPlayer === 'black' ? 'Attackers (Black)' : 'Defenders (White)'} Turn`;
+        statusText.style.color = '#f4f1e8';
+    }
+    undoBtn.disabled = !canUndo || gameOver;
+}
+
+function playSound(soundName) {
+    try {
+        sounds[soundName].currentTime = 0;
+        sounds[soundName].play().catch(() => {});
+    } catch (err) {}
+}
+
+function getMousePos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: (evt.clientX - rect.left) * (canvas.width / rect.width),
+        y: (evt.clientY - rect.top) * (canvas.height / rect.height)
+    };
+}
+
+canvas.addEventListener('mousedown', e => {
+    if (gameOver) return;
+    const pos = getMousePos(e), col = Math.floor(pos.x / SQSIZE), row = Math.floor(pos.y / SQSIZE);
+    if (row < 0 || row > 10 || col < 0 || col > 10) return;
+    const piece = board[row][col];
+    if (piece && piece.color === nextPlayer) {
+        dragging = true; draggedPiece = piece; draggedFrom = { row, col };
+        mouseX = pos.x; mouseY = pos.y;
+        validMoves = calculateMoves(row, col); drawBoard();
+    }
+});
+
+canvas.addEventListener('mousemove', e => {
+    const pos = getMousePos(e);
+    mouseX = pos.x; mouseY = pos.y;
+    if (dragging) drawBoard();
+});
+
+canvas.addEventListener('mouseup', e => {
+    if (!dragging) return;
+    const pos = getMousePos(e), col = Math.floor(pos.x / SQSIZE), row = Math.floor(pos.y / SQSIZE);
+    if (validMoves.some(m => m.row === row && m.col === col)) {
+        saveState();
+        board[row][col] = draggedPiece;
+        board[draggedFrom.row][draggedFrom.col] = null;
+        const captured = checkCaptures(row, col);
+        captured.forEach(c => board[c.row][c.col] = null);
+        playSound(captured.length > 0 ? 'capture' : 'move');
+        if (checkKingCapture()) {
+            const kingPos = findKing();
+            if (kingPos) board[kingPos.row][kingPos.col] = null;
+        }
+        lastMove = { from: draggedFrom, to: { row, col } };
+        recordPosition();
+        const kingPos = findKing();
+        if (!kingPos) { gameOver = true; winner = 'Attackers'; }
+        else if ((kingPos.row === 0 || kingPos.row === 10) && (kingPos.col === 0 || kingPos.col === 10)) {
+            gameOver = true; winner = 'Defenders';
+        }
+        else if (checkExitFort(kingPos)) { gameOver = true; winner = 'Defenders'; }
+        else if (checkEncirclement()) { gameOver = true; winner = 'Attackers'; }
+        else if (checkRepetition()) { gameOver = true; winner = 'Attackers'; }
+        if (!gameOver) {
+            nextPlayer = nextPlayer === 'black' ? 'white' : 'black';
+            if (!hasValidMoves(nextPlayer)) {
+                gameOver = true;
+                winner = nextPlayer === 'black' ? 'Defenders' : 'Attackers';
+            }
+        }
+        canUndo = true; updateStatus();
+    }
+    dragging = false; draggedPiece = null; draggedFrom = null; validMoves = [];
+    drawBoard();
+});
+
+function findKing() {
+    for (let r = 0; r < 11; r++) for (let c = 0; c < 11; c++)
+        if (board[r][c] && board[r][c].type === 'king') return { row: r, col: c };
+    return null;
+}
+
+document.getElementById('continueBtn').addEventListener('click', () => {
+    document.getElementById('menu').classList.add('hidden');
+    document.getElementById('gameContainer').classList.remove('hidden');
+    initBoard(); drawBoard();
+});
+
+document.getElementById('rulesBtn').addEventListener('click', () => {
+    document.getElementById('menu').classList.remove('hidden');
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to reset the game?')) { initBoard(); drawBoard(); }
+});
+
+document.getElementById('toggleSpriteBtn').addEventListener('click', () => {
+    useSprites = !useSprites; drawBoard();
+});
+
+document.getElementById('undoBtn').addEventListener('click', undoMove);
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'h' || e.key === 'H') document.getElementById('menu').classList.toggle('hidden');
+    if (e.key === 'u' || e.key === 'U') undoMove();
+    if (e.key === 'r' || e.key === 'R') {
+        if (confirm('Are you sure you want to reset the game?')) { initBoard(); drawBoard(); }
+    }
+    if (e.key === 's' || e.key === 'S') { useSprites = !useSprites; drawBoard(); }
+});
+
+initBoard(); drawBoard();
+    </script>
+</body>
+</html>
