@@ -2,7 +2,7 @@
 
 A fully responsive, browser-based implementation of **Hnefatafl** (Viking Chess), specifically the "Copenhagen" variant. This project is built entirely in **Vanilla JavaScript** and **HTML5 Canvas** with zero external dependencies, featuring complex algorithmic rule validation and state management.
 
-[**🔗 Play the Live Demo**][https://hnefataflweb.vercel.app](https://hnefataflweb.vercel.app)
+**🔗 Play the Live Demo** [https://hnefataflweb.vercel.app](https://hnefataflweb.vercel.app)
 
 ## 📖 About the Game
 
