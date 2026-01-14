@@ -375,9 +375,9 @@ const ROWS = 11, COLS = 11, CENTER = 5;
 
 let useSprites = false, spritesLoaded = false;
 const sprites = { whiteKing: new Image(), whiteRook: new Image(), blackRook: new Image() };
-sprites.whiteKing.src = 'assets/images/imgs-80px/white_king.png';
-sprites.whiteRook.src = 'assets/images/imgs-80px/white_rook.png';
-sprites.blackRook.src = 'assets/images/imgs-80px/black_rook.png';
+sprites.whiteKing.src = 'white_king.png';
+sprites.whiteRook.src = 'white_rook.png';
+sprites.blackRook.src = 'black_rook.png';
 
 let loadedSpriteCount = 0;
 Object.values(sprites).forEach(img => {
