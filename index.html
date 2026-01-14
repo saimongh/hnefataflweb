@@ -13,7 +13,10 @@
 
         body {
             font-family: Georgia, serif;
-            background: #4a6741;
+            /* Updated to the deeper forest green from the image */
+            background-color: #344a2d;
+            /* Subtle paper/leather texture effect */
+            background-image: url("https://www.transparenttextures.com/patterns/p6.png");
             display: flex;
             justify-content: center;
             align-items: center;
@@ -102,45 +105,72 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #4a6741;
+            background-color: #344a2d;
+            background-image: url("https://www.transparenttextures.com/patterns/p6.png");
             z-index: 1000;
             overflow-y: auto;
-            padding: 20px;
+            padding: 40px 20px;
         }
 
         .menu-panel {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: #f4f1e8;
-            border: 8px solid #3a4d33;
-            border-radius: 12px;
-            padding: 30px;
+            background: #f1ede1; /* Matches the beige in the image */
+            border: 4px solid #23311f; /* Thinner, darker border like the frame */
+            border-radius: 4px;
+            padding: 12px; /* This creates the "double frame" effect */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         .menu-header {
+            position: relative; /* Essential for positioning the GitHub link */
             background: #3a4d33;
             color: #f4f1e8;
-            padding: 30px;
+            padding: 50px 30px;
             text-align: center;
-            border-radius: 8px;
-            margin-bottom: 30px;
+            border-radius: 4px;
+            border: 2px solid #23311f;
+        }
+
+        .github-link {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #f4f1e8;
+        font-size: 13px;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+        .github-link:hover {
+            opacity: 1;
         }
 
         .menu-title {
-            font-size: 42px;
-            margin-bottom: 10px;
+            font-size: 52px;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            font-weight: 400;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .menu-subtitle {
-            color: #d4af37;
+            color: #c9a64a; /* Muted gold/bronze color */
+            font-size: 18px;
             font-style: italic;
+            letter-spacing: 1px;
         }
 
         .rules-section {
-            background: rgba(255,255,255,0.5);
-            border-left: 5px solid #6b7c63;
-            padding: 20px;
-            margin-bottom: 20px;
+            background: rgba(255,255,255,0.3);
+            border-left: 4px solid #3a4d33;
+            padding: 25px;
+            margin: 20px 10px;
         }
 
         .section-title {
@@ -163,20 +193,24 @@
         #continueBtn {
             display: block;
             width: 300px;
-            margin: 30px auto 0;
-            padding: 15px;
-            font-size: 18px;
-            background: #d4af37;
+            margin: 40px auto 20px;
+            padding: 18px;
+            font-family: Georgia, serif;
+            font-size: 17px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            background: #3a4d33;
             color: #f4f1e8;
-            border: 3px solid #3a4d33;
-            border-radius: 8px;
+            border: 1px solid #c9a64a;
             cursor: pointer;
-            font-weight: bold;
+            transition: all 0.3s;
         }
 
         #continueBtn:hover {
-            background: #3a4d33;
-            color: #d4af37;
+            background: #23311f;
+            transform: translateY(-2px);
         }
 
         .hidden {
@@ -200,6 +234,12 @@
     <div id="menu">
         <div class="menu-panel">
             <div class="menu-header">
+                <a href="https://github.com/saimongh/hnefataflweb/blob/main/README.md" target="_blank" class="github-link">
+                    <svg height="20" width="20" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                    </svg>
+                    <span>Source Code</span>
+                </a>
                 <h1 class="menu-title">⚔ HNEFATAFL ⚔</h1>
                 <p class="menu-subtitle">Copenhagen Variant • Viking Chess</p>
             </div>
@@ -383,7 +423,7 @@ function checkRepetition() {
 
 function drawBoard() {
     for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLS; col++) {
-        ctx.fillStyle = (row + col) % 2 === 0 ? '#eaebC8' : '#779a58';
+        ctx.fillStyle = (row + col) % 2 === 0 ? '#eaebC8' : '#58744f';
         ctx.fillRect(col * SQSIZE, row * SQSIZE, SQSIZE, SQSIZE);
         if (row === CENTER && col === CENTER) {
             ctx.strokeStyle = '#c8b48c'; ctx.lineWidth = 3;
